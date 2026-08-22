@@ -1,0 +1,35 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import { withBase } from '../../utils/url';
+
+export async function getStaticPaths() {
+  const updates = await getCollection('updates', ({ data }) => !data.draft);
+  return updates.map((update) => ({
+    params: { slug: update.id },
+    props: { update },
+  }));
+}
+
+const { update } = Astro.props;
+const { Content } = await render(update);
+const dateLabel = update.data.date.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<Layout title={update.data.title}>
+  <article class="prose">
+    <p><a href={withBase('/updates')}>&larr; All updates</a></p>
+    <h1>{update.data.title}</h1>
+    <p class="muted card-date">{dateLabel}</p>
+    {update.data.tags.length > 0 && (
+      <ul class="tag-list">
+        {update.data.tags.map((tag) => <li class="tag">{tag}</li>)}
+      </ul>
+    )}
+    <Content />
+  </article>
+</Layout>

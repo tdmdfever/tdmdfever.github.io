@@ -1,0 +1,45 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { withBase } from '../utils/url';
+
+const resumePdfHref = withBase('/resume.pdf');
+const resumeImageHref = withBase('/resume-preview.png');
+---
+
+<Layout title="Resume" description="Resume.">
+  <section class="resume-header">
+    <h1>Resume</h1>
+    <a class="button" href={resumePdfHref} download>Download PDF</a>
+  </section>
+
+  <section class="resume-preview-wrap">
+    <img class="resume-preview" src={resumeImageHref} alt="Resume preview" />
+  </section>
+</Layout>
+
+<style>
+  .resume-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+  }
+
+  .resume-header h1 {
+    margin-bottom: 0;
+  }
+
+  .resume-preview-wrap {
+    display: flex;
+    justify-content: center;
+  }
+
+  .resume-preview {
+    width: 100%;
+    max-width: 56rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  }
+</style>

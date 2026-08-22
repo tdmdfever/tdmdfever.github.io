@@ -1,0 +1,122 @@
+---
+import { site } from '../data/site';
+import { withBase } from '../utils/url';
+
+const navItems = [
+  { href: withBase('/'), label: 'Home' },
+  { href: withBase('/resume'), label: 'Resume' },
+  { href: withBase('/projects'), label: 'Projects' },
+  { href: withBase('/updates'), label: 'Updates' },
+];
+---
+
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a class="site-header__name" href={withBase('/')}>{site.name}</a>
+
+    <input type="checkbox" id="nav-toggle" class="nav-toggle-input" />
+    <label for="nav-toggle" class="nav-toggle-label" aria-label="Toggle menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </label>
+
+    <nav class="site-nav" aria-label="Primary">
+      <ul>
+        {navItems.map((item) => (
+          <li><a href={item.href}>{item.label}</a></li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .site-header__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: var(--space-2);
+    padding-bottom: var(--space-2);
+    position: relative;
+  }
+
+  .site-header__name {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--color-text);
+  }
+
+  .site-header__name:hover {
+    text-decoration: none;
+    color: var(--color-accent);
+  }
+
+  .nav-toggle-input {
+    display: none;
+  }
+
+  .nav-toggle-label {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 28px;
+    height: 22px;
+    cursor: pointer;
+  }
+
+  .nav-toggle-label span {
+    display: block;
+    height: 2px;
+    background: var(--color-text);
+    border-radius: 2px;
+  }
+
+  .site-nav {
+    display: none;
+    width: 100%;
+    order: 3;
+  }
+
+  .site-nav ul {
+    list-style: none;
+    margin: var(--space-2) 0 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .site-nav a {
+    color: var(--color-text);
+    font-weight: 600;
+  }
+
+  .nav-toggle-input:checked ~ .site-nav {
+    display: block;
+  }
+
+  @media (min-width: 640px) {
+    .nav-toggle-label {
+      display: none;
+    }
+
+    .site-nav {
+      display: block;
+      width: auto;
+      order: initial;
+    }
+
+    .site-nav ul {
+      flex-direction: row;
+      gap: var(--space-3);
+      margin: 0;
+    }
+  }
+</style>

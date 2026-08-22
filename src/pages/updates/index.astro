@@ -1,0 +1,249 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import UpdateCard from '../../components/UpdateCard.astro';
+import { timelineEvents } from '../../data/timeline';
+
+const updates = (await getCollection('updates', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+
+const events = [...timelineEvents].sort(
+  (a, b) => new Date(b.date).valueOf() - new Date(a.date).valueOf()
+);
+
+// Build one grid row per post, plus one row for any timeline event whose
+// month has no posts at all. A timeline event whose month DOES have posts
+// attaches to the earliest post in that month (the last one in `updates`,
+// since `updates` is sorted newest-first) — that's what lines its dot up
+// with that specific post rather than just the top of the month. All of
+// this is recomputed from `updates` + `timelineEvents` on every build, so
+// adding a post or an event never needs manual repositioning.
+function monthKey(date: Date) {
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
+}
+
+const earliestPostIndexByMonth = new Map<string, number>();
+updates.forEach((update, index) => {
+  earliestPostIndexByMonth.set(monthKey(update.data.date), index);
+});
+
+const eventsByPostIndex = new Map<number, typeof events>();
+const standaloneEvents: typeof events = [];
+for (const event of events) {
+  const key = monthKey(new Date(event.date));
+  const postIndex = earliestPostIndexByMonth.get(key);
+  if (postIndex === undefined) {
+    standaloneEvents.push(event);
+  } else {
+    eventsByPostIndex.set(postIndex, [...(eventsByPostIndex.get(postIndex) ?? []), event]);
+  }
+}
+
+type Row =
+  | { type: 'post'; date: Date; update: (typeof updates)[number]; postIndex: number }
+  | { type: 'event'; date: Date; event: (typeof events)[number] };
+
+const rows: Row[] = [
+  ...updates.map((update, postIndex) => ({
+    type: 'post' as const,
+    date: update.data.date,
+    update,
+    postIndex,
+  })),
+  ...standaloneEvents.map((event) => ({
+    type: 'event' as const,
+    date: new Date(event.date),
+    event,
+  })),
+].sort((a, b) => b.date.valueOf() - a.date.valueOf());
+
+function formatMonthYear(date: Date) {
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', timeZone: 'UTC' });
+}
+---
+
+<Layout title="Updates" description="Life updates.">
+  <h1>Updates</h1>
+
+  {rows.length > 0 ? (
+    <>
+      <div class="updates-aligned">
+        {rows.map((row, i) => {
+          const rowEvents = row.type === 'event' ? [row.event] : eventsByPostIndex.get(row.postIndex) ?? [];
+          return (
+            <div class="row" style={`--row: ${i + 1}`}>
+              <div class="row__posts">
+                {row.type === 'post' && <UpdateCard update={row.update} />}
+              </div>
+              <div class="row__dot">
+                {rowEvents.length > 0 && <span class="dot" aria-hidden="true"></span>}
+              </div>
+              <div class="row__label">
+                {rowEvents.map((event) => (
+                  <div class="timeline-entry">
+                    <span class="timeline-date">{formatMonthYear(new Date(event.date))}</span>
+                    <span class="timeline-text">{event.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+        <div class="timeline-line" style={`grid-row: 1 / ${rows.length + 1}`}></div>
+      </div>
+
+      <div class="updates-stacked">
+        <div class="update-list">
+          {updates.map((update) => <UpdateCard update={update} />)}
+        </div>
+        {events.length > 0 && (
+          <ul class="timeline">
+            {events.map((event) => (
+              <li class="timeline-item">
+                <span class="timeline-date">{formatMonthYear(new Date(event.date))}</span>
+                <span class="timeline-text">{event.label}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </>
+  ) : (
+    <p class="muted">No updates yet — check back soon.</p>
+  )}
+</Layout>
+
+<style>
+  /* Shared timeline entry text (used in both layouts) */
+  .timeline-date {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--color-text-muted);
+    margin-bottom: 0.15rem;
+  }
+
+  .timeline-text {
+    font-size: 0.9rem;
+    line-height: 1.35;
+  }
+
+  /* Desktop: one grid row per post, event dots attached to the row of the
+     earliest post in their month (or their own row if no posts that month) */
+  .updates-aligned {
+    display: none;
+  }
+
+  @media (min-width: 800px) {
+    .updates-aligned {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 14px 200px;
+      column-gap: var(--space-3);
+      row-gap: var(--space-3);
+    }
+
+    .row {
+      display: contents;
+    }
+
+    .row__posts {
+      grid-column: 1;
+      grid-row: var(--row);
+      align-self: start;
+    }
+
+    .row__posts :global(.update-card) {
+      padding: 0;
+    }
+
+    .row__dot {
+      grid-column: 2;
+      grid-row: var(--row);
+      align-self: start;
+      display: flex;
+      justify-content: center;
+      z-index: 1;
+    }
+
+    .row__dot .dot {
+      margin-top: 0.3rem;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-accent);
+      box-shadow: 0 0 0 3px var(--color-bg);
+    }
+
+    .row__label {
+      grid-column: 3;
+      grid-row: var(--row);
+      align-self: start;
+    }
+
+    .row__label > .timeline-entry + .timeline-entry {
+      margin-top: var(--space-2);
+    }
+
+    .timeline-line {
+      grid-column: 2;
+      justify-self: center;
+      width: 2px;
+      background: var(--color-border);
+    }
+  }
+
+  /* Mobile / narrow: posts stacked, simple timeline list below */
+  .updates-stacked {
+    display: block;
+  }
+
+  @media (min-width: 800px) {
+    .updates-stacked {
+      display: none;
+    }
+  }
+
+  .update-list :global(.update-card) {
+    padding: var(--space-2) 0;
+  }
+
+  .update-list :global(.update-card + .update-card) {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .update-list :global(.update-card:first-child) {
+    padding-top: 0;
+  }
+
+  .timeline {
+    list-style: none;
+    margin: var(--space-4) 0 0 0;
+    padding: 0;
+    border-left: 2px solid var(--color-border);
+  }
+
+  .timeline-item {
+    position: relative;
+    padding: 0 0 var(--space-3) var(--space-3);
+  }
+
+  .timeline-item:last-child {
+    padding-bottom: 0;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 0.3em;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    border: 2px solid var(--color-bg);
+  }
+</style>

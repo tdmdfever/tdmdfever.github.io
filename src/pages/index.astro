@@ -1,0 +1,59 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import ContactLinks from '../components/ContactLinks.astro';
+import { site } from '../data/site';
+import { withBase } from '../utils/url';
+
+const allProjects = await getCollection('projects', ({ data }) => !data.draft);
+const featuredProjects = allProjects
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+---
+
+<Layout title="Home">
+  <section class="hero">
+    <h1>{site.name}</h1>
+    <p class="prose muted">{site.tagline}</p>
+    <ContactLinks />
+    <div class="hero__actions">
+      <a class="button" href={withBase('/resume')}>View resume</a>
+      <a class="button button--secondary" href={withBase('/projects')}>See projects</a>
+    </div>
+  </section>
+
+  <section>
+    <h2>Featured projects</h2>
+    {featuredProjects.length > 0 ? (
+      <div class="card-grid">
+        {featuredProjects.map((project) => (
+          <a class="card" href={withBase(`/projects/${project.id}`)}>
+            <h3>{project.data.title}</h3>
+            <p class="muted">{project.data.description}</p>
+            {project.data.tags.length > 0 && (
+              <ul class="tag-list">
+                {project.data.tags.map((tag) => <li class="tag">{tag}</li>)}
+              </ul>
+            )}
+          </a>
+        ))}
+      </div>
+    ) : (
+      <p class="muted">No projects yet — check back soon.</p>
+    )}
+    <p><a href={withBase('/projects')}>View all projects &rarr;</a></p>
+  </section>
+</Layout>
+
+<style>
+  .hero {
+    padding-bottom: var(--space-2);
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+  }
+</style>

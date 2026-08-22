@@ -1,0 +1,30 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import { withBase } from '../../utils/url';
+
+const projects = (await getCollection('projects', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+---
+
+<Layout title="Projects" description="Personal projects.">
+  <h1>Projects</h1>
+  {projects.length > 0 ? (
+    <div class="card-grid">
+      {projects.map((project) => (
+        <a class="card" href={withBase(`/projects/${project.id}`)}>
+          <h3>{project.data.title}</h3>
+          <p class="muted">{project.data.description}</p>
+          {project.data.tags.length > 0 && (
+            <ul class="tag-list">
+              {project.data.tags.map((tag) => <li class="tag">{tag}</li>)}
+            </ul>
+          )}
+        </a>
+      ))}
+    </div>
+  ) : (
+    <p class="muted">No projects yet — check back soon.</p>
+  )}
+</Layout>
