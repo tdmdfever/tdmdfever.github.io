@@ -2,13 +2,40 @@
 import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 import ContactLinks from '../components/ContactLinks.astro';
+import Resume from '../components/Resume.astro';
+import FeaturedProjectTile from '../components/FeaturedProjectTile.astro';
 import { site } from '../data/site';
 import { withBase } from '../utils/url';
 
 const allProjects = await getCollection('projects', ({ data }) => !data.draft);
-const featuredProjects = allProjects
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
-  .slice(0, 3);
+const manuallyFeatured = allProjects
+  .filter((project) => project.data.featuredOrder !== undefined)
+  .sort((a, b) => a.data.featuredOrder! - b.data.featuredOrder!);
+const featuredProjects = manuallyFeatured.length > 0
+  ? manuallyFeatured
+  : allProjects.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf()).slice(0, 3);
+
+// A project gets an interactive embed by having a component named after its
+// slug in src/components/embeds/ (e.g. genshin-wish-calculator.astro). Projects
+// without one render as a normal card.
+const embedModules = import.meta.glob('../components/embeds/*.astro', { eager: true }) as Record<
+  string,
+  { default: any }
+>;
+const embedFor = (id: string) => embedModules[`../components/embeds/${id}.astro`]?.default;
+
+// Lets the resume link a project's title to its tile on this page when it is
+// featured here, or to its project page otherwise.
+const featuredIds = new Set(featuredProjects.map((project) => project.id));
+const projectRefs = Object.fromEntries(
+  allProjects.map((project) => [
+    project.id,
+    {
+      href: featuredIds.has(project.id) ? `#project-${project.id}` : withBase(`/projects/${project.id}`),
+      links: project.data.links,
+    },
+  ])
+);
 ---
 
 <Layout title="Home">
@@ -17,31 +44,38 @@ const featuredProjects = allProjects
     <p class="prose muted">{site.tagline}</p>
     <ContactLinks />
     <div class="hero__actions">
-      <a class="button" href={withBase('/resume')}>View resume</a>
-      <a class="button button--secondary" href={withBase('/projects')}>See projects</a>
+      <a class="button" href={withBase('/resume.pdf')} download="Terry_Deng_Resume.pdf">Download PDF</a>
+      <a class="button button--secondary" href="#projects">See projects</a>
     </div>
   </section>
 
-  <section>
+  <Resume projects={projectRefs} />
+
+  <section id="projects">
     <h2>Featured projects</h2>
     {featuredProjects.length > 0 ? (
       <div class="card-grid">
-        {featuredProjects.map((project) => (
-          <a class="card" href={withBase(`/projects/${project.id}`)}>
-            <h3>{project.data.title}</h3>
-            <p class="muted">{project.data.description}</p>
-            {project.data.tags.length > 0 && (
-              <ul class="tag-list">
-                {project.data.tags.map((tag) => <li class="tag">{tag}</li>)}
-              </ul>
-            )}
-          </a>
-        ))}
+        {featuredProjects.map((project) => {
+          const Embed = embedFor(project.id);
+          return Embed ? (
+            <FeaturedProjectTile project={project} Embed={Embed} />
+          ) : (
+            <a class="card" id={`project-${project.id}`} href={withBase(`/projects/${project.id}`)}>
+              <h3>{project.data.title}</h3>
+              <p class="muted">{project.data.description}</p>
+              {project.data.tags.length > 0 && (
+                <ul class="tag-list">
+                  {project.data.tags.map((tag) => <li class="tag">{tag}</li>)}
+                </ul>
+              )}
+            </a>
+          );
+        })}
       </div>
     ) : (
       <p class="muted">No projects yet — check back soon.</p>
     )}
-    <p><a href={withBase('/projects')}>View all projects &rarr;</a></p>
+    <p class="projects__all"><a href={withBase('/projects')}>View all projects &rarr;</a></p>
   </section>
 </Layout>
 
@@ -55,5 +89,15 @@ const featuredProjects = allProjects
     flex-wrap: wrap;
     gap: var(--space-2);
     margin-top: var(--space-3);
+  }
+
+  /* Breathing room between the last project tile and this link */
+  .projects__all {
+    margin-top: var(--space-3);
+  }
+
+  /* Keep the anchored tile from hiding under the top of the viewport */
+  :global([id^='project-']) {
+    scroll-margin-top: var(--space-3);
   }
 </style>

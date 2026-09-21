@@ -20,7 +20,7 @@ const dateLabel = project.data.date.toLocaleDateString('en-US', {
 ---
 
 <Layout title={project.data.title} description={project.data.description}>
-  <article class="prose">
+  <article class="prose prose--wide">
     <p><a href={withBase('/projects')}>&larr; All projects</a></p>
     <h1>{project.data.title}</h1>
     <p class="muted card-date">{dateLabel}</p>
@@ -30,12 +30,9 @@ const dateLabel = project.data.date.toLocaleDateString('en-US', {
       </ul>
     )}
     <div class="project-links">
-      {project.data.repoUrl && (
-        <a class="button button--secondary" href={project.data.repoUrl} target="_blank" rel="noreferrer noopener">Repo</a>
-      )}
-      {project.data.demoUrl && (
-        <a class="button button--secondary" href={project.data.demoUrl} target="_blank" rel="noreferrer noopener">Live demo</a>
-      )}
+      {project.data.links.map((link, i) => (
+        <a class={i === 0 ? 'button' : 'button button--secondary'} href={link.url} target="_blank" rel="noreferrer noopener">{link.label}</a>
+      ))}
     </div>
     <Content />
   </article>
@@ -44,6 +41,7 @@ const dateLabel = project.data.date.toLocaleDateString('en-US', {
 <style>
   .project-links {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--space-2);
     margin-bottom: var(--space-3);
   }

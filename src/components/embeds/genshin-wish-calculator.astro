@@ -1,0 +1,8 @@
+---
+// Embed for the "genshin-wish-calculator" project. The home page picks this up
+// by filename (src/components/embeds/<project-slug>.astro) and renders it inside
+// FeaturedProjectTile. It hydrates only once scrolled into view.
+import WishOdds from '../genshin-wish/WishOdds.tsx';
+---
+
+<WishOdds client:visible />

@@ -9,11 +9,13 @@ const resumeImageHref = withBase('/resume-preview.png');
 <Layout title="Resume" description="Resume.">
   <section class="resume-header">
     <h1>Resume</h1>
-    <a class="button" href={resumePdfHref} download>Download PDF</a>
+    <a class="button" href={resumePdfHref} download="Terry_Deng_Resume.pdf">Download PDF</a>
   </section>
 
   <section class="resume-preview-wrap">
-    <img class="resume-preview" src={resumeImageHref} alt="Resume preview" />
+    <div class="resume-sheet">
+      <img class="resume-preview" src={resumeImageHref} alt="Resume preview" />
+    </div>
   </section>
 </Layout>
 
@@ -35,11 +37,25 @@ const resumeImageHref = withBase('/resume-preview.png');
     justify-content: center;
   }
 
-  .resume-preview {
+  /* The preview is a black-on-white PDF page, which is a flashbang on a dark site.
+     The image is multiplied onto a cream sheet: the page's white becomes the cream
+     while black text stays black, so it reads as paper lying on the dark page.
+     Only this preview changes; the downloadable PDF is untouched. `isolation`
+     keeps the blend inside the sheet. */
+  .resume-sheet {
     width: 100%;
-    max-width: 56rem;
-    border: 1px solid var(--color-border);
+    max-width: 48rem;
+    isolation: isolate;
+    background: var(--color-paper);
+    border: 1px solid var(--color-border-strong);
     border-radius: var(--radius);
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+  }
+
+  .resume-preview {
+    display: block;
+    width: 100%;
+    mix-blend-mode: multiply;
   }
 </style>

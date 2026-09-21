@@ -1,0 +1,68 @@
+/* ============================================================================
+   STYLE GUIDE: the site's design tokens (colours, fonts, spacing, radii).
+   Change the look HERE, not per component. Every component reads these
+   variables (var(--color-accent) and so on) and nothing else in src/ hard-codes a
+   colour, font or radius, so editing a value below re-themes the whole site,
+   including the Genshin widget's charts. Restart nothing: it reloads instantly.
+
+   Design language: dark charcoal, quiet and precise. Matches the Illustrated
+   Explainer page it links to.
+   - Blue-tinted charcoal ground; panels are a step lighter; 1px hairlines.
+   - Warm cream text. Soft gold is the accent (links, interactive states,
+     data highlights); lavender is only for a second data series in charts.
+   - One type family, three voices (IBM Plex): Serif for headings, Sans for
+     prose, Mono for dates, numbers, tags, labels, and buttons.
+   - Gently rounded panels; inputs and rules stay sharp.
+
+   To try a different accent, change --color-accent (and --color-accent-strong,
+   its hover). Keep --color-accent-contrast dark enough to read on it: it is the
+   text on solid gold buttons. Muted text is >= 5.5:1 on every surface and gold is
+   >= 8:1 today; re-check contrast if you move colours far.
+
+   Two places CANNOT read these variables, so update them by hand if you change
+   the ground colour or want a matching icon:
+   - <meta name="theme-color"> in src/layouts/Layout.astro (the browser bar on
+     phones): set it to the same value as --color-bg.
+   - public/favicon.svg: plain black/white, not themed.
+   ========================================================================== */
+:root {
+  color-scheme: dark;
+
+  /* ---- Ground and panels ---- */
+  --color-bg: #14161b; /* the page */
+  --color-surface: #1b1d25; /* panels: cards, the project tile, code */
+  --color-surface-2: #22252e; /* panels nested inside panels (widget charts) */
+  --color-border: #2b2e39; /* hairlines */
+  --color-border-strong: #3c404e; /* stronger rules, slider tracks, chip outlines */
+
+  /* ---- Text ---- */
+  --color-text: #d9d0ba; /* cream, not white: ~11.8:1 on the ground, easy on the eyes */
+  --color-text-muted: #a19e96; /* warm gray to sit with the cream */
+
+  /* ---- Accent (links, interactive states, data highlights, solid buttons) ---- */
+  --color-accent: #dcb75c;
+  --color-accent-strong: #ecc978; /* hover */
+  --color-accent-contrast: #14161b; /* text on solid accent buttons */
+
+  /* ---- Data and special surfaces ---- */
+  --color-accent-2: #b39ddb; /* lavender: second data series (the Genshin constellation bars) */
+  --color-paper: #ddd4be; /* the resume "sheet": a PDF's white, blended to cream */
+
+  /* ---- Type ---- */
+  --font-serif: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+  --font-sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* ---- Spacing scale ---- */
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+  --space-4: 2.5rem;
+  --space-5: 4rem;
+
+  /* ---- Layout and shape ---- */
+  --max-width-text: 42rem;
+  --max-width-page: 64rem;
+  --radius: 7px; /* panels: cards, the project tile, widget charts, code */
+  --radius-sm: 3px; /* buttons, tags */
+}

@@ -1,0 +1,610 @@
+/* Styles for the Genshin wish-odds island. Only site tokens from tokens.css;
+   the layout responds to the embed slot's width (container query), not the viewport.
+   Look: rounded chart panels a step lighter than the tile, hairline sliders,
+   mono for every number and axis, gold on the featured series and readouts,
+   lavender for the constellation bars, goal names underlined wherever they appear in prose. */
+.wish {
+  container-type: inline-size;
+  display: grid;
+  gap: 0.75rem;
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  min-width: 0;
+}
+
+.wish__caption {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.wish__hint {
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+/* Controls */
+.wish__controls {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2);
+  align-items: end;
+}
+
+.wish__field {
+  min-width: 0;
+}
+
+.wish__field label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* The hint sits on the label's line (it wraps below only when the field is narrow) */
+.wish__field label .wish__hint {
+  font-size: 0.66rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.wish__slider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* Sliders: a 1px line with a thin bar for a thumb. The input stays 2rem tall so
+   the hit area is generous; only the line is visible. --fill is set from React. */
+.wish__slider input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  min-width: 0;
+  height: 2rem;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.wish__slider input[type='range']::-webkit-slider-runnable-track {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    var(--color-accent) var(--fill, 0%),
+    var(--color-border-strong) var(--fill, 0%)
+  );
+}
+
+.wish__slider input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 4px;
+  height: 18px;
+  margin-top: -8.5px; /* centres the thumb on the 1px track: (1 - 18) / 2 */
+  background: var(--color-accent);
+  border: 0;
+  border-radius: 0;
+}
+
+.wish__slider input[type='range']::-moz-range-track {
+  height: 1px;
+  background: var(--color-border-strong);
+}
+
+.wish__slider input[type='range']::-moz-range-progress {
+  height: 1px;
+  background: var(--color-accent);
+}
+
+.wish__slider input[type='range']::-moz-range-thumb {
+  width: 4px;
+  height: 18px;
+  background: var(--color-accent);
+  border: 0;
+  border-radius: 0;
+}
+
+.wish__slider output {
+  min-width: 2.6ch;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+.wish__field--check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 2.5rem;
+}
+
+/* Checkbox: a hollow square that fills with a green square when checked */
+.wish input[type='checkbox'] {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: none;
+  display: grid;
+  place-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0;
+  background: transparent;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.wish input[type='checkbox']::before {
+  content: '';
+  width: 0.55rem;
+  height: 0.55rem;
+  background: var(--color-accent);
+  border-radius: 1px;
+  transform: scale(0);
+}
+
+.wish input[type='checkbox']:checked {
+  border-color: var(--color-accent);
+}
+
+.wish input[type='checkbox']:checked::before {
+  transform: scale(1);
+}
+
+.wish input:focus-visible {
+  outline: 1px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Plan: the goal chain. 5★ A is fixed; the other two are toggles. */
+.wish__plan {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.wish__plan legend {
+  padding: 0;
+  margin-bottom: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.wish__chain {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.wish__arrow {
+  display: none;
+  align-self: center;
+  font-family: var(--font-mono);
+  color: var(--color-text-muted);
+}
+
+.wish__goal {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+  padding: 0.45rem 0.8rem;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.wish__goal--fixed {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  border-color: var(--color-border-strong);
+  cursor: default;
+}
+
+.wish__goal[data-on] {
+  border-color: var(--color-accent);
+}
+
+.wish__goal[data-disabled] {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.wish__goal-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.wish__goal-name {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.wish__goal[data-on] .wish__goal-name,
+.wish__goal--fixed .wish__goal-name {
+  color: var(--color-accent);
+}
+
+/* A goal's name: underlined (and a step brighter than muted prose) wherever it appears in a
+   sentence or as a chip title, so it reads as one of the three goals, not ordinary words.
+   Not a link: links are gold and not underlined. */
+.wish__term,
+.wish__goal-name {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: currentcolor;
+  text-underline-offset: 0.22em;
+}
+
+.wish__term {
+  color: var(--color-text);
+  white-space: nowrap; /* a goal name never breaks across lines */
+}
+
+.wish__goal-what {
+  font-size: 0.72rem;
+  line-height: 1.3;
+  color: var(--color-text-muted);
+}
+
+.wish__plan-hint {
+  margin: 0.4rem 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+}
+
+/* Panels: full width, stacked. The global `section + section` margin is reset here. */
+.wish__panel {
+  min-width: 0;
+  margin: 0;
+  padding: var(--space-2);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.wish__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.25rem var(--space-3);
+  margin-bottom: 0.5rem;
+}
+
+.wish__head-text {
+  flex: 1 1 20rem;
+  min-width: 0;
+}
+
+.wish__panel h4 {
+  margin: 0 0 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+
+.wish__what {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  text-wrap: pretty; /* fills the line (balance left a ragged gap on the right); only avoids orphans */
+  color: var(--color-text-muted);
+}
+
+/* Both readouts: a big number, a short phrase, then one muted line beneath */
+.wish__readout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.5rem;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+.wish__readout strong {
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-accent);
+}
+
+.wish__sub {
+  flex-basis: 100%;
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+}
+
+/* Odds by goal: a small table under the chart */
+.wish__table {
+  width: 100%;
+  table-layout: fixed; /* column widths come from the header, so they stay put as goals are added */
+  margin-top: var(--space-1);
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.wish__table th:nth-child(2) {
+  width: 5.8rem;
+}
+
+.wish__table th:nth-child(3),
+.wish__table th:nth-child(4) {
+  width: 4rem;
+}
+
+.wish__table th,
+.wish__table td {
+  padding: 0.25rem 0.4rem;
+  border-top: 1px solid var(--color-border);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.wish__table thead th {
+  border-top: 0;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.wish__table th:first-child {
+  padding-left: 0;
+  text-align: left;
+  white-space: normal;
+}
+
+.wish__table td:last-child,
+.wish__table th:last-child {
+  padding-right: 0;
+}
+
+.wish__table tbody th {
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.wish__rowkey {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.wish__rowkey svg {
+  flex: none;
+  overflow: visible;
+}
+
+.wish__table tbody tr:last-child td:nth-child(2) {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.wish__note {
+  margin: var(--space-1) 0 0;
+  padding-left: 0.7rem;
+  border-left: 2px solid var(--color-border-strong);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+/* Charts */
+.wish__chart {
+  min-width: 0;
+  margin-top: 0.25rem;
+}
+
+.wish__chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.wish__grid {
+  stroke: var(--color-border);
+  stroke-width: 1;
+}
+
+.wish__tick,
+.wish__label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  fill: var(--color-text-muted);
+}
+
+.wish__band {
+  fill: var(--color-text);
+  fill-opacity: 0.05;
+}
+
+.wish__guide {
+  stroke: var(--color-border-strong);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+}
+
+/* Left edge of the soft-pity zone: solid, so it reads as a firm boundary */
+.wish__guide--solid {
+  stroke: var(--color-text-muted);
+  stroke-dasharray: none;
+}
+
+.wish__line {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 1.75;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* Earlier goals in a longer plan: thinner gold lines, told apart by dash pattern too */
+.wish__line--stage {
+  stroke-width: 1.5;
+  stroke-opacity: 0.8;
+}
+
+.wish__line--stage0 {
+  stroke-dasharray: 0.1 4.5;
+  stroke-width: 2;
+}
+
+.wish__line--stage1 {
+  stroke-dasharray: 7 4;
+}
+
+.wish__area {
+  fill: var(--color-accent);
+  fill-opacity: 0.06;
+  stroke: none;
+}
+
+.wish__marker-line {
+  stroke: var(--color-text);
+  stroke-width: 1;
+  stroke-opacity: 0.4;
+}
+
+.wish__marker-dot {
+  fill: var(--color-accent);
+  stroke: var(--color-surface-2);
+  stroke-width: 2;
+}
+
+.wish__marker-dot--stage {
+  fill: var(--color-surface-2);
+  stroke: var(--color-accent);
+  stroke-width: 1.5;
+}
+
+.wish__label--marker {
+  fill: var(--color-accent);
+}
+
+/* Constellation bars: the second series colour, with the goal level at full strength */
+.wish__bar {
+  fill: var(--color-accent-2);
+  fill-opacity: 0.6;
+}
+
+.wish__bar--goal {
+  fill-opacity: 1;
+}
+
+.wish__value {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  fill: var(--color-text);
+}
+
+.wish__label--goal {
+  fill: var(--color-accent-2);
+}
+
+.wish__foot {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.wish__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+@container (min-width: 620px) {
+  .wish__controls {
+    grid-template-columns: 1fr 1fr auto;
+    gap: var(--space-3);
+  }
+
+  .wish__chain {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  .wish__chain .wish__goal {
+    flex: 1 1 0;
+  }
+
+  .wish__table th:nth-child(2) {
+    width: 9rem;
+  }
+
+  .wish__table th:nth-child(3),
+  .wish__table th:nth-child(4) {
+    width: 7rem;
+  }
+
+  .wish__arrow {
+    display: block;
+    align-self: center;
+  }
+
+  .wish__readout {
+    justify-content: flex-end;
+    text-align: right;
+  }
+
+  /* Pinned: the sliders stay on screen while you scroll down to the charts, so dragging the
+     budget and watching the bars is one gesture. The background must be opaque and match the
+     tile, or the charts show through as they scroll under it. */
+  .wish__controls {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    padding: 0.5rem 0;
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+  }
+}
+
+/* Shown instead of the widget if it crashes in the browser (see WishOddsBoundary) */
+.wish__fallback {
+  padding: var(--space-3);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius);
+  color: var(--color-text-muted);
+}
+
+.wish__fallback p {
+  margin: 0;
+  color: inherit;
+}
+
+.wish__fallback pre {
+  margin: var(--space-2) 0 0;
+  font-size: 0.72rem;
+  white-space: pre-wrap;
+}

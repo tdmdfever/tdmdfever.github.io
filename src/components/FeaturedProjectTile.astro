@@ -1,0 +1,74 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { withBase } from '../utils/url';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  // The project's embed component (see src/components/embeds/). The embed
+  // sits inside this tile so it is unmistakably part of the project.
+  Embed: any;
+}
+
+const { project, Embed } = Astro.props;
+const pageHref = withBase(`/projects/${project.id}`);
+---
+
+<article class="card tile" id={`project-${project.id}`}>
+  <div class="tile__head">
+    <h3><a href={pageHref}>{project.data.title}</a></h3>
+    <p class="muted">{project.data.description}</p>
+    {project.data.tags.length > 0 && (
+      <ul class="tag-list">
+        {project.data.tags.map((tag) => <li class="tag">{tag}</li>)}
+      </ul>
+    )}
+  </div>
+
+  <div class="tile__embed">
+    <Embed />
+  </div>
+
+  <div class="tile__links">
+    {project.data.links.map((link, i) => (
+      <a class={i === 0 ? 'button' : 'button button--secondary'} href={link.url} target="_blank" rel="noreferrer noopener">{link.label}</a>
+    ))}
+    <a class="tile__more" href={pageHref}>Read the write-up &rarr;</a>
+  </div>
+</article>
+
+<style>
+  .tile {
+    grid-column: 1 / -1;
+    gap: var(--space-2);
+  }
+
+  .tile__head h3 {
+    font-size: 1.3rem;
+  }
+
+  .tile__head p {
+    margin-bottom: var(--space-1);
+  }
+
+  .tile__head .tag-list {
+    margin-bottom: 0;
+  }
+
+  .tile__embed {
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-2) 0;
+  }
+
+  .tile__links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .tile__more {
+    font-size: 0.92rem;
+    font-weight: 500;
+  }
+</style>

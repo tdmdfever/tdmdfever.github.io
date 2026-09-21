@@ -28,3 +28,10 @@ const projects = (await getCollection('projects', ({ data }) => !data.draft)).so
     <p class="muted">No projects yet — check back soon.</p>
   )}
 </Layout>
+
+<style>
+  /* Room between the page title and the first card */
+  h1 {
+    margin-bottom: var(--space-3);
+  }
+</style>

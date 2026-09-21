@@ -118,10 +118,11 @@ function formatMonthYear(date: Date) {
   /* Shared timeline entry text (used in both layouts) */
   .timeline-date {
     display: block;
-    font-size: 0.72rem;
-    font-weight: 600;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.08em;
     color: var(--color-text-muted);
     margin-bottom: 0.15rem;
   }
@@ -141,7 +142,7 @@ function formatMonthYear(date: Date) {
     .updates-aligned {
       position: relative;
       display: grid;
-      grid-template-columns: 1fr 14px 200px;
+      grid-template-columns: 1fr 15px 200px;
       column-gap: var(--space-3);
       row-gap: var(--space-3);
     }
@@ -171,8 +172,8 @@ function formatMonthYear(date: Date) {
 
     .row__dot .dot {
       margin-top: 0.3rem;
-      width: 8px;
-      height: 8px;
+      width: 9px;
+      height: 9px;
       border-radius: 50%;
       background: var(--color-accent);
       box-shadow: 0 0 0 3px var(--color-bg);
@@ -191,8 +192,8 @@ function formatMonthYear(date: Date) {
     .timeline-line {
       grid-column: 2;
       justify-self: center;
-      width: 2px;
-      background: var(--color-border);
+      width: 1px;
+      background: var(--color-border-strong);
     }
   }
 
@@ -223,7 +224,7 @@ function formatMonthYear(date: Date) {
     list-style: none;
     margin: var(--space-4) 0 0 0;
     padding: 0;
-    border-left: 2px solid var(--color-border);
+    border-left: 1px solid var(--color-border-strong);
   }
 
   .timeline-item {
@@ -240,8 +241,8 @@ function formatMonthYear(date: Date) {
     position: absolute;
     left: -5px;
     top: 0.3em;
-    width: 8px;
-    height: 8px;
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
     background: var(--color-accent);
     border: 2px solid var(--color-bg);

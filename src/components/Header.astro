@@ -8,6 +8,14 @@ const navItems = [
   { href: withBase('/projects'), label: 'Projects' },
   { href: withBase('/updates'), label: 'Updates' },
 ];
+
+const normalize = (path: string) => path.replace(/\/+$/, '') || '/';
+const current = normalize(Astro.url.pathname);
+const home = normalize(withBase('/'));
+const isActive = (href: string) => {
+  const target = normalize(href);
+  return target === home ? current === target : current === target || current.startsWith(`${target}/`);
+};
 ---
 
 <header class="site-header">
@@ -24,7 +32,7 @@ const navItems = [
     <nav class="site-nav" aria-label="Primary">
       <ul>
         {navItems.map((item) => (
-          <li><a href={item.href}>{item.label}</a></li>
+          <li><a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>{item.label}</a></li>
         ))}
       </ul>
     </nav>
@@ -47,8 +55,10 @@ const navItems = [
   }
 
   .site-header__name {
-    font-weight: 700;
-    font-size: 1.1rem;
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: 1;
     color: var(--color-text);
   }
 
@@ -73,9 +83,8 @@ const navItems = [
 
   .nav-toggle-label span {
     display: block;
-    height: 2px;
+    height: 1px;
     background: var(--color-text);
-    border-radius: 2px;
   }
 
   .site-nav {
@@ -94,8 +103,21 @@ const navItems = [
   }
 
   .site-nav a {
+    color: var(--color-text-muted);
+    font-size: 0.88rem;
+    font-weight: 500;
+    padding-bottom: 0.2rem;
+    border-bottom: 1px solid transparent;
+  }
+
+  .site-nav a:hover {
     color: var(--color-text);
-    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .site-nav a[aria-current='page'] {
+    color: var(--color-text);
+    border-bottom-color: var(--color-accent);
   }
 
   .nav-toggle-input:checked ~ .site-nav {

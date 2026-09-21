@@ -8,10 +8,16 @@ const projects = defineCollection({
     description: z.string(),
     date: z.coerce.date(),
     tags: z.array(z.string()).default([]),
-    repoUrl: z.string().url().optional(),
-    demoUrl: z.string().url().optional(),
+    // Buttons shown on the project page, in the order written. Any number,
+    // any label (e.g. "Live Site", "Repo", "Illustrated Explainer").
+    links: z.array(z.object({ label: z.string(), url: z.string().url() })).default([]),
     image: z.string().optional(),
     draft: z.boolean().default(false),
+    // Controls placement (and order) in the home page's "Featured projects"
+    // section — lower numbers first. Omit to leave a project out of that
+    // section; if no project sets this, the home page falls back to the
+    // 3 most recent by date.
+    featuredOrder: z.number().optional(),
   }),
 });
 

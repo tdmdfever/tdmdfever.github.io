@@ -1,0 +1,21 @@
+---
+import { parseInline } from '../utils/inline';
+
+interface Props {
+  text: string;
+}
+
+const spans = parseInline(Astro.props.text);
+---
+{spans.map((span) => span.style === 'bold' ? <strong class={/\d/.test(span.text) ? 'num' : undefined}>{span.text}</strong> : span.style === 'italic' ? <em>{span.text}</em> : span.text)}
+
+<style>
+  /* Bold spans containing a digit are metrics: mono, green, tabular */
+  .num {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-accent);
+  }
+</style>

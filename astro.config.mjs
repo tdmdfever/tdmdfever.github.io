@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import react from '@astrojs/react';
 import { fileURLToPath } from 'node:url';
 import { generateResumePreview } from './scripts/generate-resume-preview.mjs';
 
@@ -30,7 +31,12 @@ function resumePreview() {
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: [resumePreview()],
+  integrations: [resumePreview(), react()],
+  vite: {
+    // Guarantee a single copy of React. Two copies (e.g. after the dev server re-bundles
+    // dependencies) make the island throw "Invalid hook call" and go blank.
+    resolve: { dedupe: ['react', 'react-dom'] },
+  },
   // User/org site: repo is named "tdmdfever.github.io", served at the root.
   site: 'https://tdmdfever.github.io',
   base: '/',
