@@ -3,7 +3,8 @@
 Terry Deng's personal portfolio site: resume (viewable + downloadable), contact
 links, projects, and a life-updates feed with a timeline. Built with Astro so
 that adding content is a file change, not a code change. Deploys to GitHub
-Pages via GitHub Actions (not yet pushed to a GitHub repo).
+Pages via GitHub Actions. Live at https://tdmdfever.github.io/ (repo
+`tdmdfever/tdmdfever.github.io`, public).
 
 ## Where content lives
 
@@ -128,7 +129,11 @@ whole point is that it recomputes as posts/events are added.
 `main` (official `withastro/action@v3`, pinned to Node 22 — Astro 7 requires
 >=22.12 and the action defaults to Node 20). `astro.config.mjs` is set for a
 user site: repo `tdmdfever.github.io`, `site: 'https://tdmdfever.github.io'`,
-`base: '/'`. Not yet pushed to GitHub (see README for the steps).
+`base: '/'`. Pushed to GitHub on 2026-09-21. Pages' source is set to **GitHub
+Actions** (Settings → Pages), not "deploy from branch": a `<user>.github.io` repo
+starts in branch mode, which would publish the raw source instead of the build,
+so the source was switched with `gh api -X PUT repos/<owner>/<repo>/pages -f
+build_type=workflow`. Every push to `main` redeploys.
 
 CI builds from this repo alone, so nothing under `src/` may import from
 outside it (e.g. the sibling `../genshin-wish-calculator` folder): that works
