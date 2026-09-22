@@ -18,6 +18,12 @@ const projects = defineCollection({
     // section; if no project sets this, the home page falls back to the
     // 3 most recent by date.
     featuredOrder: z.number().optional(),
+    // Whether to show this project's interactive embed (if it has one — see
+    // src/components/embeds/) when it's featured. Set to `false` to drop back
+    // to a plain card without deleting the embed file, e.g. to make room for a
+    // newer project's demo while keeping this one in the rotation lower down.
+    // Has no effect on a project with no embeds/<slug>.astro file.
+    demo: z.boolean().default(true),
   }),
 });
 

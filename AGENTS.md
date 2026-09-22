@@ -12,38 +12,43 @@ Pages via GitHub Actions. Live at https://tdmdfever.github.io/ (repo
   truth; every page that shows contact info reads from here (home page and
   footer both render `ContactLinks.astro`).
   **No phone numbers anywhere on the site, on purpose** (Terry doesn't want
-  spam calls/texts). Don't add a phone field or `tel:` links, and never put a
-  phone number in the web resume (`resume.ts`). The `public/resume.pdf`
-  published here must be the phone-free copy; Terry keeps the version with a
-  phone number for sending to people directly. Email is fine to show.
+  spam calls/texts). Don't add a phone field or `tel:` links. The
+  `public/resume.pdf` published here must be the phone-free copy; Terry keeps
+  the version with a phone number for sending to people directly. Email is
+  fine to show.
 - `src/data/timeline.ts` — milestone events (`{ date, label }`) shown next to
   `/updates`. Order doesn't matter, it's sorted automatically.
 - `src/content/projects/*.md` — one file per project (Astro content
   collection, schema in `src/content.config.ts`). Requires `title`,
-  `description`, `date`; optional `tags`, `featuredOrder`, and `links` — an
-  ordered list of `{ label, url }` shown as buttons on the project page and in
-  the home-page tile, in the order written (any number, any label, e.g. Live
-  Site / Illustrated Explainer / Repo). The FIRST link is drawn as the primary
-  (solid gold) button and the rest as secondary, so put the main action first.
-- `src/data/resume.ts` — the resume shown on the home page (sections →
-  entries → bullets; `**bold**` and `_italic_` inline). Rendered by
-  `src/components/Resume.astro`. Deliberately the SHORT web version, not a
-  copy of `public/resume.pdf`: 1-2 metric-driven bullets per role, and no
-  Projects section (the project tiles below it do that job). Update both when
-  facts change; the wording doesn't have to match. Don't invent metrics —
-  only use numbers already on the resume. An entry can set `project: '<slug>'`
-  to link its title to that project's tile and show the project's `links`
-  beside it; nothing uses this right now.
+  `description`, `date`; optional `tags`, `featuredOrder`, `demo`, and `links`
+  — an ordered list of `{ label, url }` shown as buttons on the project page
+  and in the home-page tile, in the order written (any number, any label, e.g.
+  Live Site / Illustrated Explainer / Repo). The FIRST link is drawn as the
+  primary (solid gold) button and the rest as secondary, so put the main
+  action first.
 - `src/components/embeds/<project-slug>.astro` — optional. If a component
-  with a project's slug exists here, the home page renders that project as a
-  wide `FeaturedProjectTile` with the component embedded inside it (see
-  "Genshin embed" below). Projects without one render as normal cards. The
-  glob is read at startup, so restart the dev server after adding or removing
-  an embed file.
+  with a project's slug exists here AND that project's `demo` is not `false`
+  (default `true`), the home page renders that project as a wide
+  `FeaturedProjectTile` with the component embedded inside it (see "Genshin
+  embed" below). Swapping which project demos is just adding/removing that
+  project's embed file; setting `demo: false` retires a demo without deleting
+  its file or code, dropping it back to a plain card — combine with
+  `featuredOrder` to push it down the list while a newer project's demo takes
+  the top spot. `src/utils/projects.ts` (`getFeaturedProjects()`,
+  `getEmbed()`) is the one place this logic lives; `index.astro` is currently
+  its only reader. The embeds folder is scanned at startup, so restart the
+  dev server after adding or removing an embed file (not needed for `demo` or
+  `featuredOrder`, which are ordinary frontmatter and reload live).
 - `src/content/updates/*.md` — one file per update post (content
   collection). Requires `title`, `description`, `date`.
-- `public/resume.pdf` — the downloadable resume file. This is the only file
-  to edit; `resume-preview.png` regenerates from it automatically.
+- `public/resume.pdf` — the resume, full stop. This is the only file to edit;
+  everything else about the resume is generated from it. `/resume` (and the
+  home page's "Resume" button, which just links there) shows only this PDF's
+  preview image and a download button — no separate text/HTML version exists
+  anywhere on the site (there was one, `src/data/resume.ts` +
+  `src/components/Resume.astro`; both were deleted, along with `Inline.astro`
+  and `utils/inline.ts` which only existed to render it). Don't recreate that
+  system — the PDF preview is the whole resume now.
 - `public/resume-preview.png` — plain static image shown on `/resume`.
   Deliberately an `<img>`, not an embedded PDF viewer — no toolbar/zoom/
   sidebar wanted. **Generated, don't edit by hand**: an Astro integration in
@@ -77,8 +82,7 @@ cannot read the tokens and are updated by hand: `<meta name="theme-color">` in
 - Accent: `--color-accent` (gold) is only for links, interactive states and
   data highlights, never large fills. `--color-accent-2` (lavender) is only for
   a second data series in charts (dashed, so it never relies on colour alone); the
-  Genshin widget currently uses it just for the constellation bars. Resume bold spans that contain a digit render as gold mono
-  metrics (`Inline.astro`).
+  Genshin widget currently uses it just for the constellation bars.
 - Type, all IBM Plex, self-hosted via `@fontsource` and imported in
   `Layout.astro` (no third-party requests): Serif 600 for h1-h3, Sans 400/500/
   600 + 400 italic for prose, Mono 400/500 for dates, numbers, tags, labels and
@@ -235,23 +239,77 @@ Constraints to keep:
   which share left/right margins so the plot areas line up when stacked.
 - Charts have `role="img"` with a short `aria-labelledby` name and the numbers in
   `aria-describedby`; a debounced `role="status"` region announces the summary.
-- Blank embed slot (dev flake). Symptom: the tile renders but the embed area is
-  an empty ~34px gap; a dev-server restart "fixes" it. Diagnosis (measured): the
-  widget is in the server HTML, so a failed JS download leaves it visible; only
-  the widget *throwing while rendering in the browser* empties the slot, because
-  React unmounts the tree. Seen again (2026-09-20): `_jsxDEV is not a function`,
-  right after `npm install --no-save playwright` while the dev server was up (a
-  `node_modules` change under a running server), fixed by restarting it. Note the
-  error comes from the outer `WishOdds` function itself, which its own boundary
-  cannot catch (a boundary only catches its children). Mitigations in place:
-  `WishOddsBoundary` in `WishOdds.tsx` turns a crash in the inner component into a
-  fallback message (link to the live calculator; in dev it also prints the error
-  stack and logs `[wish-odds]`), and `astro.config.mjs` sets
-  `vite.resolve.dedupe: ['react', 'react-dom']`. **After installing or removing
-  anything in `node_modules` (including the temporary Playwright install), restart
-  the dev server.** If it recurs, read the browser console before restarting.
-  The *other* failure (embed missing entirely, plain card shown) is the embeds
-  glob being read at startup: restart the dev server.
+- Genshin widget dev flakiness. **The dominant real-world cause, found
+  2026-09-22 after the widget broke a fourth time despite an earlier "fix":
+  `astro dev` and `astro build` share the exact same cache directory,
+  `node_modules/.vite/deps`, and corrupt it if run close together.** Direct
+  proof: a literal collision artifact was found on disk, `node_modules/.vite/deps
+  2` (Vite/the OS renaming a second concurrent write rather than colliding
+  silently), timestamped to the exact moment a `npm run build` sanity check ran
+  right after a dev-server restart. After that collision, the dev server served
+  a stack trace rooted in `node_modules/react-dom/cjs/react-dom-client.production.js`
+  — the **production** React build, loaded during a **dev** session — while
+  `WishOdds.tsx` still compiled its JSX against the dev-only `_jsxDEV` runtime,
+  which production React doesn't export. Same `_jsxDEV is not a function`
+  error as every earlier occurrence, different mechanism. This was very likely
+  the dominant cause all along, not just this one instance: a `npm run build`
+  check after nearly every fix, often with the dev server still running, is
+  standard practice in this repo (see "Checking a visual change"), and matches
+  the timing of prior recurrences better than the theories below.
+
+  **The rule this implies: never run `npm run build` / `astro build` while
+  `astro dev` is running.** If a build needs checking while dev must stay up,
+  treat it exactly like a `node_modules` change afterward: `astro dev stop`,
+  `rm -rf node_modules/.vite`, `astro dev --background`.
+
+  Two earlier, narrower theories, kept for reference since they're still
+  plausible contributing mechanisms (both involve the same cache directory,
+  just corrupted a different way) — not fully retracted, just superseded as
+  the primary explanation:
+  - `vite.optimizeDeps.include` in `astro.config.mjs` (lists
+    `@astrojs/react/client.js`, `react/jsx-dev-runtime`, `react/jsx-runtime`,
+    `react-dom/client`) forces the widget's React client-hydration chain to be
+    pre-bundled at cold start. Reasoning: the widget is `client:visible`, so
+    that chain is only ever imported dynamically from the browser once
+    scrolled into view — invisible to Vite's normal startup crawl — and left
+    alone, Vite would discover it lazily mid-session and could race an
+    already-loaded page. Kept; harmless either way.
+  - `vite.resolve.dedupe: ['react', 'react-dom']` guards against two loaded
+    copies of React disagreeing. Kept as cheap insurance.
+
+  It showed up (at least) three ways depending on exactly how the cache was
+  corrupted — useful for recognizing it fast, not for picking a different fix:
+  - **Widget vanishes** (empty ~34px gap). `_jsxDEV is not a function`, thrown
+    at the very first line of `WishOdds()` while it constructs its own
+    `<WishOddsBoundary>` — exactly why the boundary can't catch it (a boundary
+    only catches errors in its children, not in the code that creates it).
+  - **Widget renders but is inert** (sliders/checkboxes don't respond).
+    `Failed to fetch dynamically imported module: .../@astrojs/react/dist/client.js`,
+    retried and given up — hydration never completes, so static markup sits
+    there with nothing behind it.
+  - **Same `_jsxDEV` error, but the stack trace runs through
+    `react-dom/cjs/react-dom-client.production.js`** — the build/dev cache
+    collision described above.
+  In every variant, a plain `astro dev stop && astro dev --background` was
+  not reliably enough — Vite/the build tooling can reuse an existing, broken
+  `.vite/deps` directory across a process restart. `rm -rf node_modules/.vite`
+  before restarting is what actually clears it.
+
+  Mitigation still in place as defense in depth: `WishOddsBoundary` in
+  `WishOdds.tsx` turns a render crash into a fallback message (link to the
+  live calculator; in dev it also prints the error stack and logs
+  `[wish-odds]`).
+
+  **If it recurs**: first ask whether a build ran near the dev server
+  recently — that's now the leading suspect. Then `astro dev stop`,
+  `rm -rf node_modules/.vite`, `astro dev --background`. Read the browser
+  console first if you can; the stack trace tells you which variant above
+  it is. Verify with real interaction (drag a slider, click a checkbox), not
+  just a page load — a plain load can look fine while hydration is actually
+  broken.
+  The *other*, unrelated failure (embed missing entirely, plain card shown
+  instead) is the embeds glob being read at startup: restart the dev server
+  (no cache-clear needed for this one).
 - Bundle: the island's critical path is ~92 KB gzipped JS (react-dom ~66, react
   ~3, widget + the single-goal tables ~24); `odds-extras` adds ~209 KB gzipped as
   a separate chunk fetched after mount. Nothing loads until the tile scrolls into
@@ -278,6 +336,14 @@ npx playwright install chromium
 npm uninstall --no-save playwright
 rm -rf ~/Library/Caches/ms-playwright
 ```
+
+**If the dev server needs to stay running afterward** (e.g. for the user to
+look at): a plain restart after the final `npm uninstall` should now be
+enough — see the Genshin widget dev-flakiness entry below for the
+`optimizeDeps` fix that addressed this at the root (2026-09-22) and was
+stress-tested specifically against `node_modules` churn without a restart. If
+the widget still misbehaves after a restart, fall back to `astro dev stop`,
+`rm -rf node_modules/.vite`, `astro dev --background`.
 
 ## Development
 

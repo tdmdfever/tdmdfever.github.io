@@ -1,41 +1,12 @@
 ---
-import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 import ContactLinks from '../components/ContactLinks.astro';
-import Resume from '../components/Resume.astro';
 import FeaturedProjectTile from '../components/FeaturedProjectTile.astro';
 import { site } from '../data/site';
 import { withBase } from '../utils/url';
+import { getFeaturedProjects, getEmbed } from '../utils/projects';
 
-const allProjects = await getCollection('projects', ({ data }) => !data.draft);
-const manuallyFeatured = allProjects
-  .filter((project) => project.data.featuredOrder !== undefined)
-  .sort((a, b) => a.data.featuredOrder! - b.data.featuredOrder!);
-const featuredProjects = manuallyFeatured.length > 0
-  ? manuallyFeatured
-  : allProjects.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf()).slice(0, 3);
-
-// A project gets an interactive embed by having a component named after its
-// slug in src/components/embeds/ (e.g. genshin-wish-calculator.astro). Projects
-// without one render as a normal card.
-const embedModules = import.meta.glob('../components/embeds/*.astro', { eager: true }) as Record<
-  string,
-  { default: any }
->;
-const embedFor = (id: string) => embedModules[`../components/embeds/${id}.astro`]?.default;
-
-// Lets the resume link a project's title to its tile on this page when it is
-// featured here, or to its project page otherwise.
-const featuredIds = new Set(featuredProjects.map((project) => project.id));
-const projectRefs = Object.fromEntries(
-  allProjects.map((project) => [
-    project.id,
-    {
-      href: featuredIds.has(project.id) ? `#project-${project.id}` : withBase(`/projects/${project.id}`),
-      links: project.data.links,
-    },
-  ])
-);
+const { featured: featuredProjects } = await getFeaturedProjects();
 ---
 
 <Layout title="Home">
@@ -44,19 +15,17 @@ const projectRefs = Object.fromEntries(
     <p class="prose muted">{site.tagline}</p>
     <ContactLinks />
     <div class="hero__actions">
-      <a class="button" href={withBase('/resume.pdf')} download="Terry_Deng_Resume.pdf">Download PDF</a>
+      <a class="button" href={withBase('/resume')}>Resume</a>
       <a class="button button--secondary" href="#projects">See projects</a>
     </div>
   </section>
-
-  <Resume projects={projectRefs} />
 
   <section id="projects">
     <h2>Featured projects</h2>
     {featuredProjects.length > 0 ? (
       <div class="card-grid">
         {featuredProjects.map((project) => {
-          const Embed = embedFor(project.id);
+          const Embed = getEmbed(project);
           return Embed ? (
             <FeaturedProjectTile project={project} Embed={Embed} />
           ) : (
