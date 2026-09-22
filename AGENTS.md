@@ -74,7 +74,11 @@ imported in `Layout.astro` right before `global.css`, NOT via a CSS `@import`
 inside `global.css`: the dev server does not live-reload `@import`ed files (edits
 to them never showed up until a restart), which would defeat the point. Two places
 cannot read the tokens and are updated by hand: `<meta name="theme-color">` in
-`Layout.astro` (match `--color-bg`) and `public/favicon.svg` (plain black/white).
+`Layout.astro` (match `--color-bg`) and `public/favicon.svg` — "TD" in the
+serif, hand-set (a standalone favicon SVG can't reliably load the self-hosted
+IBM Plex Serif font file, so it falls back to a system serif stack) and
+hard-coded to the current `--color-accent` gold. Update the hex by hand if
+the gold ever changes.
 
 - Surfaces: `--color-bg` (page), `--color-surface` (panels: `.card`, the project
   tile, code), `--color-surface-2` (panels nested in panels: the widget's
